@@ -1,14 +1,20 @@
 import type { AppId } from '../App'
 import { formatDate } from '../hooks/useNow'
 import { Squiggle } from '../components/Icons'
+import { BatteryStatus } from '../components/BatteryStatus'
+import { useBattery } from '../hooks/useBattery'
 
 const launcher: AppId[] = ['call', 'messages', 'notes', 'music', 'read']
 
 export function Home({ now, time, onOpen }: { now: Date; time: string; onOpen: (app: AppId) => void }) {
+  const battery = useBattery()
   return (
     <div className="home">
       <div>
-        <p className="mono muted">{formatDate(now)}</p>
+        <div className="status">
+          <p className="mono muted">{formatDate(now)}</p>
+          {battery && <BatteryStatus battery={battery} />}
+        </div>
         <p className="clock">
           <time dateTime={now.toISOString()}>{time}</time>
         </p>

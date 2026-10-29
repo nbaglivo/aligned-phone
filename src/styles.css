@@ -234,6 +234,19 @@ p {
   flex: 1;
 }
 
+.status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.battery {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .clock {
   font-size: 88px;
   line-height: 1;

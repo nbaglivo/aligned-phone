@@ -53,3 +53,11 @@ export const Squiggle = ({ className }: { className?: string }) => (
     <circle cx="196" cy="26" r="2.5" />
   </svg>
 )
+
+export const BatteryIcon = ({ level }: { level: number }) => (
+  <svg width="22" height="11" viewBox="0 0 22 11" strokeWidth={1} {...base}>
+    <rect x="0.5" y="0.5" width="18" height="10" rx="2.5" />
+    <path d="M20.5 3.5 V7.5" />
+    <rect x="2.5" y="2.5" width={Math.max(0, Math.min(1, level)) * 14} height="6" rx="1" fill="currentColor" stroke="none" />
+  </svg>
+)
