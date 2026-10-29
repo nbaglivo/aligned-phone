@@ -60,15 +60,17 @@ Planned: `brightness { level }`, `call { number }`, `call/hangup`,
 
 ## Shell side
 
-- `src/useBattery.ts` — the reference hook: shared `EventSource`, subscribes
+- `src/hooks/useDaemonEvent.ts` — the one shared `EventSource`; `useDaemonEvent(name)`
+  returns the latest payload of one event.
+- `src/hooks/useBattery.ts` — the reference hook: subscribes
   to one event name. New hooks copy this shape.
-- `src/BatteryIndicator.tsx` — the reference component.
+- `src/components/BatteryIndicator.tsx` — the reference component.
 
 ## Roadmap
 
-1. Daemon in `daemon/server.mjs`: static + SSE + battery (sysfs polling). ← next
-2. Fixtures in `daemon/fixtures/` for running without the phone.
-3. Brightness (sysfs read + write action).
+1. Daemon in `daemon/server.mjs`: static + SSE + battery (sysfs polling). ✓
+2. Fixtures in `daemon/fixtures/` for running without the phone. ✓
+3. Brightness (sysfs read + write action). ← next
 4. Power button / suspend (`/dev/input`, logind).
 5. Modem: calls + SMS via ModemManager (`dbus-next`).
 6. Switch battery to UPower signals (no polling).
