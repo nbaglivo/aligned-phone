@@ -29,7 +29,6 @@ export function Home({ now, time, onOpen }: { now: Date; time: string; onOpen: (
           ))}
         </ul>
       </nav>
-      <p className="caption">Nothing needs you right now.</p>
     </div>
   )
 }
