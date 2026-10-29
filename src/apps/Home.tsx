@@ -1,0 +1,29 @@
+import type { AppId } from '../App'
+import { formatDate } from '../hooks/useNow'
+import { Squiggle } from '../components/Icons'
+
+const launcher: AppId[] = ['call', 'messages', 'notes', 'music', 'read']
+
+export function Home({ now, time, onOpen }: { now: Date; time: string; onOpen: (app: AppId) => void }) {
+  return (
+    <div className="home">
+      <div>
+        <p className="mono muted">{formatDate(now)}</p>
+        <p className="clock">
+          <time dateTime={now.toISOString()}>{time}</time>
+        </p>
+      </div>
+      <Squiggle className="squiggle" />
+      <nav aria-label="Apps" className="launcher">
+        <ul className="rows rows--closed">
+          {launcher.map((id) => (
+            <li key={id}>
+              <button onClick={() => onOpen(id)}>{id}</button>
+            </li>
+          ))}
+        </ul>
+      </nav>
+      <p className="caption">Nothing needs you right now.</p>
+    </div>
+  )
+}
