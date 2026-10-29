@@ -44,7 +44,7 @@ local Node daemon ⇄ the system (sysfs files, D-Bus services).
 ## Verifying work
 
 - Daemon without a phone: run it against fake sysfs
-  (`POWER_SUPPLY_DIR=./fixtures/power_supply node daemon/server.mjs`) and
+  (`STATIC_DIR=dist POWER_SUPPLY_DIR=daemon/fixtures/power_supply node daemon/server.mjs`) and
   `curl -N localhost:8080/events`.
 - On the phone: `./scripts/deploy.sh`, then
   `ssh user@172.16.42.1 'curl -sN --max-time 3 localhost:8080/events'`.
