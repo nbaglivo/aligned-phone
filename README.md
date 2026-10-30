@@ -3,6 +3,10 @@
 A minimal phone shell: time and day, and five apps — call, messages, notes, music, read.
 Visual language from nbaglivo.dev: warm paper, warm ink, IBM Plex Sans Light + Plex Mono, thin line drawings.
 
+<p align="center">
+  <img src="docs/images/calm-shell-oneplus6.png" alt="Home screen on a OnePlus 6: date, battery, large clock, a thin wave line, and the five apps listed below" width="360">
+</p>
+
 React 19 + Vite + TypeScript. No router or UI library. Fonts are self-hosted (`@fontsource`), so it runs offline.
 
 ```sh
