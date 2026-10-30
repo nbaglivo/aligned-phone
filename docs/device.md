@@ -20,8 +20,8 @@ variant), flashed via webflash. Developed from a Mac.
 
 ## Session setup
 
-Installed: `cage chromium wlr-randr nodejs` (and `busybox-extras` from before
-the daemon existed).
+Packages: `cage chromium wlr-randr nodejs curl` (see the one-time setup below;
+`busybox-extras` may linger from before the daemon existed — unused).
 
 `/usr/share/wayland-sessions/calm.desktop`:
 
@@ -35,18 +35,10 @@ Type=Application
 Made default with:
 `doas tinydm-set-session -f -s /usr/share/wayland-sessions/calm.desktop`
 
-`/usr/local/bin/calm-session`:
-
-```sh
-#!/bin/sh
-node /opt/calm-daemon/server.mjs &
-exec cage -- sh -c '
-  wlr-randr --output "$(wlr-randr | head -1 | cut -d" " -f1)" --scale 2.5
-  exec chromium --kiosk --app=http://127.0.0.1:8080 \
-    --ozone-platform=wayland \
-    --no-first-run --noerrdialogs --disable-pinch
-'
-```
+`/usr/local/bin/calm-session` is a symlink to `/opt/calm-daemon/calm-session`,
+which lives in the repo as `daemon/calm-session` and is deployed with the
+daemon. Edit it there — never hand-paste it on the phone. It starts the daemon,
+waits for port 8080, then starts cage + Chromium.
 
 Paths on the phone: shell build → `/opt/calm/`, daemon → `/opt/calm-daemon/`.
 
@@ -56,7 +48,7 @@ Restart the session: `doas systemctl restart tinydm`. If it reports
 Back to Sxmo: `ls /usr/share/wayland-sessions/`, then `tinydm-set-session`
 with the Sxmo file, then restart tinydm.
 
-## Unattended deploys (one-time setup)
+## One-time setup (unattended deploys)
 
 So `scripts/deploy.sh` (and coding agents) can deploy without passwords:
 
@@ -65,13 +57,22 @@ So `scripts/deploy.sh` (and coding agents) can deploy without passwords:
 ssh-copy-id user@172.16.42.1
 
 # on the phone
+doas apk add nodejs curl rsync   # rsync is optional, faster deploys
+doas install -d -o user -g user /opt/calm /opt/calm-daemon
 doas chown -R user:user /opt/calm /opt/calm-daemon
-echo 'permit nopass user as root cmd systemctl args restart tinydm' | doas tee -a /etc/doas.conf
-echo 'permit nopass user as root cmd systemctl args start tinydm'   | doas tee -a /etc/doas.conf
-doas apk add rsync   # optional, faster deploys
+doas ln -sf /opt/calm-daemon/calm-session /usr/local/bin/calm-session
+printf '%s\n' \
+  'permit nopass user as root cmd systemctl args restart tinydm' \
+  'permit nopass user as root cmd systemctl args start tinydm' \
+  | doas tee /etc/doas.d/zz-calm.conf
 ```
 
-Only restarting tinydm is passwordless; everything else still asks.
+Then run `./scripts/deploy.sh` once from the Mac (until it has, the symlink
+points at nothing and the session can't start).
+
+Only (re)starting tinydm is passwordless; everything else still asks. The
+doas rules go in `/etc/doas.d/zz-calm.conf` because the last matching rule
+wins and the image's own `/etc/doas.d/` rules would otherwise override them.
 
 ## Gotchas we already hit
 
@@ -87,6 +88,21 @@ Only restarting tinydm is passwordless; everything else still asks.
   terminfo once:
   `infocmp -x xterm-ghostty | ssh user@172.16.42.1 -- tic -x -`
   (or `export TERM=xterm-256color`).
+- **Black screen, journal shows `status=126` then `start-limit-hit`**: the
+  session script can't be executed. tinydm's own output (e.g. `setpriv: ...
+  Exec format error`) is the real error. Fix the script, then
+  `doas systemctl reset-failed tinydm && doas systemctl start tinydm` —
+  `restart` alone won't clear the start limit.
+- **"Site can't be reached" in the kiosk**: nothing on 8080 — the daemon
+  isn't running. Run `node /opt/calm-daemon/server.mjs` by hand to see why
+  (e.g. `node: not found`).
+- **404 page in HTML (`<TITLE>404 Not Found</TITLE>`)**: that's BusyBox
+  `httpd`, not the daemon (which answers in plain text). An old session
+  script is still serving the shell.
+- **`doas: a tty is required`** from `deploy.sh`: the nopass rules are
+  missing or overridden; see the one-time setup.
+- **`doas -C` is misleading**: as `user` it can't read the config; under
+  `doas` it checks rules for root. Read the rule files instead.
 - Battery on this device is a `bq27411`-style fuel gauge under
   `/sys/class/power_supply/`; find it by `type == Battery`, don't hardcode
   the name.

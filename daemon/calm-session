@@ -1,0 +1,25 @@
+#!/bin/sh
+# Session entry point: start the daemon, wait for it, then the kiosk.
+# Installed by scripts/deploy.sh to /opt/calm-daemon/calm-session;
+# /usr/local/bin/calm-session is a symlink to it (docs/device.md).
+
+if command -v node >/dev/null; then
+  node /opt/calm-daemon/server.mjs &
+else
+  echo 'calm-session: node not found (doas apk add nodejs)' >&2
+fi
+
+# Chromium shows "can't be reached" and won't retry if it loads too early.
+i=0
+until curl -s -o /dev/null http://127.0.0.1:8080/ || [ "$i" -ge 50 ]; do
+  sleep 0.2
+  i=$((i + 1))
+done
+[ "$i" -lt 50 ] || echo 'calm-session: daemon not up after 10s, starting kiosk anyway' >&2
+
+exec cage -- sh -c '
+  wlr-randr --output "$(wlr-randr | head -1 | cut -d" " -f1)" --scale 2.5
+  exec chromium --kiosk --app=http://127.0.0.1:8080 \
+    --ozone-platform=wayland \
+    --no-first-run --noerrdialogs --disable-pinch
+'

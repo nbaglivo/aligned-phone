@@ -38,7 +38,8 @@ local Node daemon ⇄ the system (sysfs files, D-Bus services).
 
 - Reach it: `ssh user@172.16.42.1` (USB) — key auth is set up.
 - Privilege: **`doas`, not `sudo`**. Init: **systemd**. Packages: **`apk`**.
-- Session: `tinydm` → `/usr/local/bin/calm-session` → `cage` → Chromium kiosk.
+- Session: `tinydm` → `/usr/local/bin/calm-session` (symlink to the deployed
+  `daemon/calm-session`) → `cage` → Chromium kiosk.
 - Logs: `journalctl -u tinydm -b`; daemon output goes to the same journal.
 
 ## Verifying work
